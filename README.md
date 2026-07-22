@@ -197,4 +197,4 @@ This project demonstrates my ability to:
 
 This reflects how a **real data analyst thinks and works**, not just how tools are used.
 
-Author: Nachiket Patil
+Author:Kunal Deshinge
