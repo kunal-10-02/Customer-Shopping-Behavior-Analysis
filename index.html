@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html data-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Customer Shopping Behavior Analysis</title>
+    <!-- Combined External Resources -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&amp;family=Lato:wght@400;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Base Reset & Layout */
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #f0f2f5;
+            /* Light gray background for presentation view */
+            font-family: 'Lato', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Slide Container - Viewport for standard 1280x720 slides */
+        #presentation-stage {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            background-color: #FFFFFF;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Individual Content Slides */
+        .slide-content {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+            /* Hidden by default */
+            /* Internal slide layout styles */
+            flex-direction: column;
+            color: #003366;
+        }
+
+        .slide-content.active {
+            display: flex;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Navigation Controls */
+        #nav-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-btn {
+            background-color: #0052CC;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: #003366;
+        }
+
+        .nav-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .slide-counter {
+            align-self: center;
+            color: #003366;
+            font-weight: bold;
+        }
+
+        /* --- Merged Styles from Original Slides --- */
+        /* Typography */
+        .title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 36px;
+            /* Standardize specific sizes inline or override */
+            color: #0052CC;
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        .title-large {
+            font-size: 52px;
+        }
+
+        /* For Slide 1 */
+
+        .subtitle {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 32px;
+            color: #003366;
+        }
+
+        .subtitle-medium {
+            font-size: 24px;
+            color: #0052CC;
+        }
+
+        .body-text {
+            font-family: 'Lato', sans-serif;
+            font-size: 20px;
+            color: #555555;
+        }
+
+        .body-text-sm {
+            font-size: 16px;
+            color: #003366;
+        }
+
+        /* Accents & Shapes */
+        .accent-line {
+            width: 120px;
+            height: 6px;
+            background-color: #4A90E2;
+            border-radius: 3px;
+        }
+
+        .accent-line-sm {
+            width: 80px;
+            height: 4px;
+            border-radius: 0;
+        }
+
+        .geometric-shape {
+            position: absolute;
+            background-color: rgba(74, 144, 226, 0.1);
+            border-radius: 0;
+            z-index: 0;
+        }
+
+        /* Specific Geometric Shapes (Merged classes) */
+        .s1-shape1 {
+            width: 450px;
+            height: 450px;
+            top: -150px;
+            right: -100px;
+            transform: rotate(45deg);
+        }
+
+        .s1-shape2 {
+            width: 250px;
+            height: 250px;
+            bottom: -50px;
+            left: 50px;
+            transform: rotate(30deg);
+            background-color: rgba(0, 82, 204, 0.05);
+        }
+
+        .s1-shape3 {
+            width: 150px;
+            height: 150px;
+            top: 100px;
+            left: -50px;
+            transform: rotate(15deg);
+            background-color: rgba(173, 216, 230, 0.2);
+        }
+
+        .s2-shape1 {
+            width: 300px;
+            height: 300px;
+            top: -100px;
+            right: -50px;
+            transform: rotate(45deg);
+            background-color: rgba(74, 144, 226, 0.05);
+        }
+
+        .s3-shape1 {
+            width: 250px;
+            height: 250px;
+            top: -80px;
+            right: -40px;
+            background-color: rgba(74, 144, 226, 0.05);
+            transform: rotate(45deg);
+        }
+
+        .s3-shape2 {
+            width: 180px;
+            height: 180px;
+            bottom: 40px;
+            left: -30px;
+            background-color: rgba(0, 82, 204, 0.03);
+            transform: rotate(15deg);
+        }
+
+        /* Components */
+        .metrics-pill {
+            background-color: #F0F7FF;
+            border-left: 4px solid #0052CC;
+            padding: 15px 30px;
+            display: inline-block;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .metrics-text {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #0052CC;
+            font-size: 18px;
+        }
+
+        .presentation-info {
+            position: absolute;
+            bottom: 40px;
+            width: 100%;
+            padding: 0 80px;
+            display: flex;
+            justify-content: space-between;
+            color: #888888;
+            font-size: 16px;
+        }
+
+        .footer-sm {
+            position: absolute;
+            bottom: 20px;
+            left: 40px;
+            right: 40px;
+            display: flex;
+            justify-content: space-between;
+            color: #888888;
+            font-size: 12px;
+        }
+
+        /* KPI Cards (Slide 2) */
+        .kpi-card {
+            background-color: #F8FBFF;
+            border: 1px solid #E6F2FF;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .kpi-value {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 42px;
+            color: #0052CC;
+            margin-bottom: 5px;
+        }
+
+        .kpi-label {
+            font-family: 'Lato', sans-serif;
+            font-size: 14px;
+            color: #555555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .kpi-subtext {
+            font-size: 12px;
+            color: #4A90E2;
+            margin-top: 5px;
+        }
+
+        .chart-container-box {
+            background-color: #FFFFFF;
+            border: 1px solid #E6F2FF;
+            border-radius: 8px;
+            padding: 20px;
+            height: 280px;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: #003366;
+            margin-bottom: 15px;
+            padding-left: 10px;
+            border-left: 4px solid #4A90E2;
+        }
+
+        .highlight-box {
+            background-color: rgba(74, 144, 226, 0.05);
+            border-left: 4px solid #0052CC;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+
+        .highlight-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #0052CC;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .highlight-text {
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.4;
+        }
+
+        /* Slide 3 Specifics */
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E6F2FF;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .card-header {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: #003366;
+            margin-bottom: 10px;
+            border-left: 3px solid #4A90E2;
+            padding-left: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            min-height: 0;
+        }
+
+        .insight-item {
+            background-color: #F8FBFF;
+            border-left: 3px solid #0052CC;
+            padding: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .insight-value {
+            font-weight: 700;
+            color: #0052CC;
+        }
+
+        /* Slide 4 Specifics */
+        .data-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E6F2FF;
+            border-left: 4px solid #0052CC;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            flex-grow: 1;
+        }
+
+        .metric-card {
+            background-color: #F8FBFF;
+            border: 1px solid #E6F2FF;
+            border-radius: 4px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        /* Slide 5 & 6 Specifics */
+        .blue-accent {
+            color: #0052CC;
+        }
+
+        .initiative-box {
+            background-color: rgba(129, 176, 227, 0.1);
+            border: 1px solid rgba(0, 82, 204, 0.3);
+            padding: 16px;
+            margin-bottom: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tech-icon {
+            color: #0052CC;
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .strategy-recap {
+            background-color: rgba(227, 242, 253, 0.8);
+            border: 1px solid rgba(74, 144, 226, 0.3);
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+        }
+
+        .action-item {
+            background-color: rgba(227, 242, 253, 0.5);
+            border-left: 3px solid #4A90E2;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+
+        .cta-button {
+            background-color: #0052CC;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 16px;
+            display: inline-block;
+        }
+
+        .timeline-marker {
+            background-color: #4A90E2;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 12px;
+            position: absolute;
+            right: 12px;
+            top: 12px;
+        }
+
+        .responsible {
+            font-family: 'Lato', sans-serif;
+            font-size: 14px;
+            color: #4A90E2;
+            font-style: italic;
+        }
+
+        .light-blue-bg {
+            background-color: #E3F2FD;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="presentation-stage">
+
+        <!-- === SLIDE 1: Title Slide === -->
+        <div class="slide-content active" id="slide-1">
+            <div class="geometric-shape s1-shape1"></div>
+            <div class="geometric-shape s1-shape2"></div>
+            <div class="geometric-shape s1-shape3"></div>
+
+            <div class="flex flex-col justify-center items-center flex-1 px-20 z-10">
+                <div class="text-center mb-8 max-w-5xl">
+                    <div class="accent-line mx-auto mb-8"></div>
+                    <h1 class="title title-large mb-6">CUSTOMER SHOPPING<br />BEHAVIOR ANALYSIS</h1>
+                    <h2 class="subtitle mb-6">Unlocking Strategic Insights from Transactional Data</h2>
+                </div>
+
+                <div class="text-center max-w-3xl">
+                    <p class="body-text mb-8">Comprehensive analysis of 3,900 customer transactions revealing critical
+                        patterns in spending, demographics, and product preferences to drive business growth.</p>
+                    <div class="metrics-pill">
+                        <p class="metrics-text">
+                            <i class="fas fa-database mr-2"></i> Data-Driven Strategy &amp; Analysis
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="presentation-info">
+                <div>
+                    <p><i class="far fa-calendar-alt mr-2"></i> February 3, 2026</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- === SLIDE 2: Executive Summary === -->
+        <div class="slide-content" id="slide-2">
+            <div class="geometric-shape s2-shape1"></div>
+            <div class="title-area z-10" style="padding: 40px 40px 20px 40px;">
+                <h1 class="title">EXECUTIVE SUMMARY</h1>
+                <div class="accent-line accent-line-sm"></div>
+                <p class="text-lg text-gray-600 mb-2">Key performance metrics from customer shopping behavior analysis
+                </p>
+            </div>
+
+            <div class="flex flex-col flex-1 px-10 pb-12 z-10">
+                <!-- KPI Row -->
+                <div class="flex justify-between space-x-6 mb-8">
+                    <div class="w-1/4">
+                        <div class="kpi-card">
+                            <div class="mb-2"><i class="fas fa-users text-3xl text-blue-200"></i></div>
+                            <p class="kpi-value">3.9K</p>
+                            <p class="kpi-label">Total Customers</p>
+                            <p class="kpi-subtext">Across 4 key categories</p>
+                        </div>
+                    </div>
+                    <div class="w-1/4">
+                        <div class="kpi-card">
+                            <div class="mb-2"><i class="fas fa-shopping-bag text-3xl text-blue-200"></i></div>
+                            <p class="kpi-value">$59.76</p>
+                            <p class="kpi-label">Avg. Purchase</p>
+                            <p class="kpi-subtext">Per transaction value</p>
+                        </div>
+                    </div>
+                    <div class="w-1/4">
+                        <div class="kpi-card">
+                            <div class="mb-2"><i class="fas fa-star text-3xl text-blue-200"></i></div>
+                            <p class="kpi-value">3.75</p>
+                            <p class="kpi-label">Avg. Rating</p>
+                            <p class="kpi-subtext">Product satisfaction score</p>
+                        </div>
+                    </div>
+                    <div class="w-1/4">
+                        <div class="kpi-card">
+                            <div class="mb-2"><i class="fas fa-id-card text-3xl text-blue-200"></i></div>
+                            <p class="kpi-value">27%</p>
+                            <p class="kpi-label">Subscriber Rate</p>
+                            <p class="kpi-subtext">Recurring customer base</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts & Insights Row -->
+                <div class="flex space-x-6 flex-1">
+                    <!-- Left Chart -->
+                    <div class="w-1/3">
+                        <p class="section-title">SUBSCRIPTION BREAKDOWN</p>
+                        <div class="chart-container-box flex items-center justify-center">
+                            <canvas id="subscriptionChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Middle Insights -->
+                    <div class="w-1/3 flex flex-col">
+                        <p class="section-title">STRATEGIC HIGHLIGHTS</p>
+                        <div class="highlight-box flex-1">
+                            <p class="highlight-title"><i class="fas fa-tshirt mr-2"></i>Top Performer: Clothing</p>
+                            <p class="highlight-text">Clothing category leads in both total revenue ($104K+) and sales
+                                volume (1,700+ units), representing the core business driver.</p>
+                        </div>
+                        <div class="highlight-box flex-1">
+                            <p class="highlight-title"><i class="fas fa-user-friends mr-2"></i>Key Segment: Young Adults
+                            </p>
+                            <p class="highlight-text">Young Adults generate the highest revenue ($62K) and sales volume
+                                (1,038 purchases), identifying them as the primary target demographic.</p>
+                        </div>
+                        <div class="highlight-box flex-1">
+                            <p class="highlight-title"><i class="fas fa-chart-line mr-2"></i>Growth Opportunity</p>
+                            <p class="highlight-text">With 73% non-subscribers, there is significant potential to
+                                increase customer lifetime value through targeted loyalty conversion.</p>
+                        </div>
+                    </div>
+                    <!-- Right Chart -->
+                    <div class="w-1/3">
+                        <p class="section-title">REVENUE BY CATEGORY PREVIEW</p>
+                        <div class="chart-container-box">
+                            <canvas id="categoryPreviewChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- === SLIDE 3: Demographics === -->
+        <div class="slide-content" id="slide-3">
+            <div class="geometric-shape s3-shape1"></div>
+            <div class="geometric-shape s3-shape2"></div>
+
+            <div class="title-area z-10" style="padding: 30px 40px 10px 40px;">
+                <h1 class="title" style="font-size: 32px; margin-bottom: 8px;">Customer Demographics &amp; Segmentation
+                </h1>
+                <div class="accent-line accent-line-sm" style="margin-bottom: 10px;"></div>
+                <p class="subtitle" style="font-size: 16px; color: #666666;">Detailed breakdown of customer base by
+                    gender, age, subscription status, and behavior segments</p>
+            </div>
+
+            <div class="flex flex-col flex-1 px-10 pb-10 z-10 gap-5">
+                <!-- Top Row -->
+                <div class="flex gap-5 h-56">
+                    <!-- Gender -->
+                    <div class="card w-1/4">
+                        <div class="card-header">
+                            <span>GENDER DISTRIBUTION</span>
+                            <i class="fas fa-venus-mars text-blue-300"></i>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="genderChart"></canvas>
+                        </div>
+                    </div>
+                    <!-- Subscription -->
+                    <div class="card w-1/4">
+                        <div class="card-header">
+                            <span>SUBSCRIPTION STATUS</span>
+                            <i class="fas fa-ticket-alt text-blue-300"></i>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="subChart"></canvas>
+                        </div>
+                        <div class="absolute bottom-2 left-0 right-0 text-center">
+                            <p class="text-xs text-gray-500">27% Conversion Rate</p>
+                        </div>
+                    </div>
+                    <!-- Loyalty -->
+                    <div class="card w-2/4">
+                        <div class="card-header">
+                            <span>CUSTOMER LOYALTY SEGMENTS</span>
+                            <i class="fas fa-users text-blue-300"></i>
+                        </div>
+                        <div class="flex h-full">
+                            <div class="chart-wrapper w-2/3">
+                                <canvas id="segmentChart"></canvas>
+                            </div>
+                            <div class="w-1/3 flex flex-col justify-center pl-2 space-y-2">
+                                <div class="insight-item">
+                                    <p class="text-xs text-gray-500 mb-1">Loyalty Opportunity</p>
+                                    <p class="text-xs">Convert <span class="insight-value">Returning</span> customers to
+                                        <span class="insight-value">Loyal</span> via rewards.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Row -->
+                <div class="flex gap-5 flex-1 max-h-64">
+                    <div class="card w-2/3">
+                        <div class="card-header">
+                            <span>REVENUE &amp; SALES BY AGE GROUP</span>
+                            <i class="fas fa-chart-bar text-blue-300"></i>
+                        </div>
+                        <div class="flex h-full items-center">
+                            <div class="chart-wrapper h-full w-full">
+                                <canvas id="ageChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card w-1/3">
+                        <div class="card-header">
+                            <span>SHIPPING BEHAVIOR</span>
+                            <i class="fas fa-shipping-fast text-blue-300"></i>
+                        </div>
+                        <div class="flex flex-col justify-between h-full py-2">
+                            <div class="flex items-center mb-3">
+                                <div
+                                    class="w-9 h-9 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-2">
+                                    <i class="fas fa-truck-fast"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm text-blue-900">Express Shipping</p>
+                                    <p class="text-xs text-gray-500">High-Value Customers</p>
+                                </div>
+                            </div>
+                            <div class="insight-item flex-1">
+                                <p class="text-xs mb-1">Customers choosing Express Shipping exhibit <span
+                                        class="insight-value">15% higher</span> average order value compared to Standard
+                                    Shipping.</p>
+                            </div>
+                            <div class="insight-item flex-1">
+                                <p class="text-xs mb-1">Target Express users with subscription offers as they value
+                                    <span class="insight-value">speed &amp; convenience</span>.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-sm">
+                <p>Customer Shopping Behavior Analysis</p>
+                <p>3</p>
+            </div>
+        </div>
+
+        <!-- === SLIDE 4: Product Performance === -->
+        <div class="slide-content" id="slide-4">
+            <div class="geometric-shape s1-shape1"></div> <!-- Repurpose shape -->
+            <div class="flex flex-col h-full p-10 z-10">
+                <div class="mb-4">
+                    <h1 class="title mb-3">PRODUCT PERFORMANCE ANALYSIS</h1>
+                    <div class="accent-line accent-line-sm mb-4"></div>
+                </div>
+
+                <div class="flex flex-row justify-between space-x-6 flex-grow">
+                    <!-- Revenue -->
+                    <div class="w-1/3 flex flex-col">
+                        <h3 class="subtitle subtitle-medium mb-3">REVENUE BY CATEGORY</h3>
+                        <div class="chart-container"
+                            style="height: 220px; width: 100%; margin-bottom: 15px; position:relative;">
+                            <canvas id="revenueBarChart"></canvas>
+                        </div>
+                        <div class="data-card">
+                            <p class="blue-accent font-bold mb-1">Top Performer:</p>
+                            <p class="body-text text-sm body-text-sm">Clothing generates the highest revenue at
+                                <strong>$104,264</strong>, significantly outperforming Accessories ($42K) and Footwear
+                                ($28K).
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Sales -->
+                    <div class="w-1/3 flex flex-col">
+                        <h3 class="subtitle subtitle-medium mb-3">SALES VOLUME</h3>
+                        <div class="chart-container"
+                            style="height: 220px; width: 100%; margin-bottom: 15px; position:relative;">
+                            <canvas id="salesBarChart"></canvas>
+                        </div>
+                        <div class="data-card">
+                            <p class="blue-accent font-bold mb-1">Transaction Volume:</p>
+                            <p class="body-text text-sm body-text-sm">Clothing leads with <strong>1,789</strong>
+                                completed sales. Accessories follows with strong volume despite lower ticket value.</p>
+                        </div>
+                    </div>
+                    <!-- Rating -->
+                    <div class="w-1/3 flex flex-col">
+                        <h3 class="subtitle subtitle-medium mb-3">CATEGORY RATINGS</h3>
+                        <div class="chart-container"
+                            style="height: 220px; width: 100%; margin-bottom: 15px; position:relative;">
+                            <canvas id="ratingBarChart"></canvas>
+                        </div>
+                        <div class="data-card">
+                            <p class="blue-accent font-bold mb-1">Quality Perception:</p>
+                            <p class="body-text text-sm body-text-sm">Consistent satisfaction across categories.
+                                Footwear maintains the highest average rating (3.9), while Outerwear shows opportunity
+                                for improvement.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2">
+                    <h3 class="subtitle subtitle-medium mb-3">CATEGORY KPIs</h3>
+                    <div class="flex justify-between">
+                        <div class="metric-card w-1/5">
+                            <p class="metric-value">46%</p>
+                            <p class="metric-label">Clothing Rev. Share</p>
+                            <p class="text-xs text-blue-400">Dominant Category</p>
+                        </div>
+                        <div class="metric-card w-1/5">
+                            <p class="metric-value">$59.76</p>
+                            <p class="metric-label">Avg. Purchase Value</p>
+                            <p class="text-xs text-blue-400">Across All Items</p>
+                        </div>
+                        <div class="metric-card w-1/5">
+                            <p class="metric-value">3.75</p>
+                            <p class="metric-label">Avg. Review Rating</p>
+                            <p class="text-xs text-blue-400">Target: 4.0+</p>
+                        </div>
+                        <div class="metric-card w-1/5">
+                            <p class="metric-value">1,789</p>
+                            <p class="metric-label">Top Category Sales</p>
+                            <p class="text-xs text-blue-400">Clothing Unit Vol.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-sm">
+                <div></div>
+                <div class="text-right">4</div>
+            </div>
+        </div>
+
+        <!-- === SLIDE 5: Strategic Recommendations === -->
+        <div class="slide-content" id="slide-5">
+            <div class="geometric-shape s1-shape1"></div>
+            <div class="geometric-shape s1-shape2" style="left: 100px;"></div>
+
+            <div class="flex flex-row h-full p-10">
+                <div class="w-1/2 flex flex-col justify-center pr-12 z-10">
+                    <h1 class="title mb-3">STRATEGIC RECOMMENDATIONS</h1>
+                    <div class="accent-line mb-6" style="background-color: #0052CC;"></div>
+
+                    <div class="body-text space-y-6">
+                        <p class="mb-4">
+                            <span class="blue-accent font-bold">Action Plan:</span>
+                            To maximize revenue potential, we must pivot from broad acquisition to targeted retention
+                            and value optimization. The focus is on leveraging high-value segments like subscribers and
+                            Young Adults.
+                        </p>
+                        <div>
+                            <p class="blue-accent font-bold mb-2">Primary Objectives:</p>
+                            <ul class="list-disc pl-6 space-y-3">
+                                <li>Increase Customer Lifetime Value (CLV) through subscription conversion</li>
+                                <li>Enhance retention by migrating "Returning" customers to "Loyal" status</li>
+                                <li>Optimize margin by refining discount strategies on high-volume categories</li>
+                            </ul>
+                        </div>
+                        <div class="mt-8 p-4 bg-blue-50 border-l-4 border-blue-600 rounded-r">
+                            <p class="text-sm font-bold text-blue-800">EXPECTED OUTCOME</p>
+                            <p class="text-sm mt-1">Implementing these initiatives is projected to increase recurring
+                                revenue by 15% and improve average order value for non-subscribers.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-1/2 flex flex-col justify-center pl-4 z-10">
+                    <div class="w-full mb-8">
+                        <h3 class="subtitle subtitle-medium mb-4 text-center">CUSTOMER GROWTH ENGINES</h3>
+                        <div class="grid-container">
+                            <div class="initiative-box text-center">
+                                <i class="fas fa-crown tech-icon"></i>
+                                <p class="initiative-header text-base font-bold text-blue-700">Boost Subscriptions</p>
+                                <p class="body-text text-sm leading-tight">Offer exclusive benefits &amp; early access
+                                </p>
+                            </div>
+                            <div class="initiative-box text-center">
+                                <i class="fas fa-handshake tech-icon"></i>
+                                <p class="initiative-header text-base font-bold text-blue-700">Loyalty Programs</p>
+                                <p class="body-text text-sm leading-tight">Incentivize repeat buyers to become "Loyal"
+                                </p>
+                            </div>
+                            <div class="initiative-box text-center">
+                                <i class="fas fa-bullseye tech-icon"></i>
+                                <p class="initiative-header text-base font-bold text-blue-700">Target Marketing</p>
+                                <p class="body-text text-sm leading-tight">Focus on Young Adults &amp; Express shippers
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full">
+                        <h3 class="subtitle subtitle-medium mb-4 text-center">OPERATIONAL OPTIMIZATION</h3>
+                        <div class="grid-container">
+                            <div class="initiative-box text-center">
+                                <i class="fas fa-tags tech-icon"></i>
+                                <p class="initiative-header text-base font-bold text-blue-700">Optimize Discounts</p>
+                                <p class="body-text text-sm leading-tight">Balance sales volume with margin protection
+                                </p>
+                            </div>
+                            <div class="initiative-box text-center">
+                                <i class="fas fa-star tech-icon"></i>
+                                <p class="initiative-header text-base font-bold text-blue-700">Product Positioning</p>
+                                <p class="body-text text-sm leading-tight">Highlight top-rated &amp; best-selling items
+                                </p>
+                            </div>
+                            <div class="initiative-box text-center">
+                                <i class="fas fa-database tech-icon"></i>
+                                <p class="initiative-header text-base font-bold text-blue-700">Data Quality</p>
+                                <p class="body-text text-sm leading-tight">Address missing ratings to improve analytics
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-sm">
+                <div class="blue-accent text-sm">Customer Shopping Behavior Analysis</div>
+                <div class="blue-accent text-right font-bold">5</div>
+            </div>
+        </div>
+
+        <!-- === SLIDE 6: Conclusion === -->
+        <div class="slide-content" id="slide-6">
+            <div class="geometric-shape s1-shape1"></div>
+            <div class="geometric-shape s1-shape2" style="left: 100px;"></div>
+
+            <div class="flex flex-row h-full p-10">
+                <div class="w-1/2 flex flex-col justify-center pr-8">
+                    <h1 class="title mb-3">CONCLUSION &amp; NEXT STEPS</h1>
+                    <div class="accent-line mb-6"></div>
+
+                    <div class="body-text space-y-4">
+                        <p class="mb-4"><span class="blue-accent font-bold">Key Findings Summary:</span> Our analysis
+                            confirms that optimizing for the "Young Adult" segment and capitalizing on the
+                            high-performing "Clothing" category offer the most immediate revenue opportunities.</p>
+                        <p class="mb-3"><span class="blue-accent font-bold">Strategic Pillars:</span></p>
+                        <ul class="list-disc pl-6 space-y-2">
+                            <li>Leverage dominance in Clothing &amp; Accessories categories</li>
+                            <li>Convert 73% non-subscribers via targeted value propositions</li>
+                            <li>Maximize LTV of high-engagement Young Adult segment</li>
+                            <li>Optimize discount strategies to protect margins</li>
+                        </ul>
+                        <p class="mt-5 mb-3"><span class="blue-accent font-bold">Review Roadmap:</span></p>
+                        <div class="action-item">
+                            <p class="dark-blue-text font-bold">Phase 1: Launch &amp; Finalize</p>
+                            <p class="responsible">Focus: Subscriptions &amp; KPIs</p>
+                            <p class="timeline-marker">30 Days</p>
+                        </div>
+                        <div class="action-item">
+                            <p class="dark-blue-text font-bold">Phase 2: Pilot &amp; Test</p>
+                            <p class="responsible">Focus: Loyalty Program &amp; A/B Tests</p>
+                            <p class="timeline-marker">60 Days</p>
+                        </div>
+                        <div class="action-item">
+                            <p class="dark-blue-text font-bold">Phase 3: Review &amp; Scale</p>
+                            <p class="responsible">Focus: Full Results Analysis</p>
+                            <p class="timeline-marker">90 Days</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-1/2 flex flex-col items-center justify-center">
+                    <div class="w-full mb-6">
+                        <h3 class="subtitle subtitle-medium mb-4 text-center">INSIGHT RECAP</h3>
+                        <div class="strategy-recap">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-tshirt text-3xl blue-accent mr-4"></i>
+                                <div>
+                                    <p class="dark-blue-text font-bold">Category Leader</p>
+                                    <p class="body-text text-sm">Clothing drives highest revenue volume ($104K+)</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-users text-3xl blue-accent mr-4"></i>
+                                <div>
+                                    <p class="dark-blue-text font-bold">Core Demographics</p>
+                                    <p class="body-text text-sm">Young Adults lead in total spend and frequency</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-undo text-3xl blue-accent mr-4"></i>
+                                <div>
+                                    <p class="dark-blue-text font-bold">Subscription Gap</p>
+                                    <p class="body-text text-sm">73% Non-subscribers represents major upside</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-shipping-fast text-3xl blue-accent mr-4"></i>
+                                <div>
+                                    <p class="dark-blue-text font-bold">Service Impact</p>
+                                    <p class="body-text text-sm">Express shipping correlates with higher cart value</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full">
+                        <h3 class="subtitle subtitle-medium mb-4">IMMEDIATE ACTIONS</h3>
+                        <div class="light-blue-bg p-6 rounded">
+                            <ol class="list-decimal pl-6 dark-blue-text space-y-3">
+                                <li><span class="font-bold">Finalize KPI targets &amp; dashboards</span> (Week 1)</li>
+                                <li><span class="font-bold">Execute subscription growth campaign</span> (Week 2)</li>
+                                <li><span class="font-bold">Build audience segments for paid media</span> (Week 3)</li>
+                                <li><span class="font-bold">Refresh product pages &amp; A/B test discounts</span> (Week
+                                    4)</li>
+                                <li><span class="font-bold">Pilot Loyalty Program Tier Structure</span> (Month 2)</li>
+                            </ol>
+                            <div class="flex justify-center mt-6">
+                                <div class="cta-button">
+                                    <i class="fas fa-rocket mr-2"></i> EXECUTE GROWTH PLAN
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <!-- Navigation Controls -->
+    <div id="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()" id="prev-btn">Previous</button>
+        <div class="slide-counter">Slide <span id="current-slide-num">1</span> of 6</div>
+        <button class="nav-btn" onclick="nextSlide()" id="next-btn">Next</button>
+    </div>
+
+    <script>
+        // --- Slide Navigation Logic ---
+        let currentSlide = 1;
+        const totalSlides = 6;
+
+        function showSlide(slideIndex) {
+            // Validation
+            if (slideIndex < 1) slideIndex = 1;
+            if (slideIndex > totalSlides) slideIndex = totalSlides;
+
+            currentSlide = slideIndex;
+
+            // Hide all
+            document.querySelectorAll('.slide-content').forEach(slide => {
+                slide.classList.remove('active');
+                slide.style.display = 'none';
+            });
+
+            // Show current
+            const activeSlide = document.getElementById(`slide-${currentSlide}`);
+            if (activeSlide) {
+                activeSlide.style.display = 'flex'; // Restore display flex
+                activeSlide.classList.add('active'); // Add active for animation
+            }
+
+            // Update Counter
+            document.getElementById('current-slide-num').innerText = currentSlide;
+
+            // Update Buttons
+            document.getElementById('prev-btn').disabled = (currentSlide === 1);
+            document.getElementById('next-btn').disabled = (currentSlide === totalSlides);
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function () {
+            showSlide(1);
+
+            // --- Chart Initialization (Merged from original Scripts) ---
+            // Slide 2 Charts
+            const subCtx = document.getElementById('subscriptionChart').getContext('2d');
+            new Chart(subCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Subscribers (Yes)', 'Non-Subscribers (No)'],
+                    datasets: [{
+                        data: [27, 73],
+                        backgroundColor: ['#0052CC', '#E6F2FF'],
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, font: { family: 'Lato', size: 12 }, color: '#555555' }
+                        }
+                    }
+                }
+            });
+
+            const catCtx = document.getElementById('categoryPreviewChart').getContext('2d');
+            new Chart(catCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Clothing', 'Accessories', 'Footwear', 'Outerwear'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [104264, 74200, 62000, 38000],
+                        backgroundColor: ['#0052CC', '#4A90E2', '#82B1FF', '#E6F2FF'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: function (context) { return '$' + context.raw.toLocaleString(); } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { callback: function (value) { return '$' + value / 1000 + 'K'; }, font: { size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
+
+            // Slide 3 Charts
+            Chart.defaults.font.family = "'Lato', sans-serif";
+            Chart.defaults.color = '#555555';
+
+            new Chart(document.getElementById('genderChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Female', 'Male'],
+                    datasets: [{
+                        data: [55, 45],
+                        backgroundColor: ['#0052CC', '#4A90E2'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    cutout: '70%'
+                }
+            });
+
+            new Chart(document.getElementById('subChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Subscribed', 'Not Subscribed'],
+                    datasets: [{
+                        data: [27, 73],
+                        backgroundColor: ['#0052CC', '#E6F2FF'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } },
+                    cutout: '70%'
+                }
+            });
+
+            new Chart(document.getElementById('segmentChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['New', 'Returning', 'Loyal'],
+                    datasets: [{
+                        label: 'Customer Count',
+                        data: [1200, 1800, 900],
+                        backgroundColor: ['#82B1FF', '#4A90E2', '#0052CC'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { grid: { display: false } } }
+                }
+            });
+
+            new Chart(document.getElementById('ageChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Young Adult', 'Adult', 'Middle-aged', 'Senior'],
+                    datasets: [
+                        {
+                            label: 'Revenue ($)',
+                            data: [62000, 56000, 59000, 48000],
+                            backgroundColor: '#0052CC',
+                            order: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Sales Volume',
+                            data: [1038, 942, 986, 900],
+                            backgroundColor: '#82B1FF',
+                            type: 'bar', // Actually mixed chart in original code, but explicit type here is safe
+                            order: 2,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', align: 'end', labels: { boxWidth: 10, font: { size: 11 } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'Revenue ($)' }, grid: { color: '#f0f0f0' } },
+                        y1: { type: 'linear', display: true, position: 'right', title: { display: true, text: 'Transactions' }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // Slide 4 Charts
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#E6F2FF' }, ticks: { color: '#003366', font: { family: 'Lato', size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: '#003366', font: { family: 'Lato', size: 11 } } }
+                }
+            };
+
+            const revenueCtx4 = document.getElementById('revenueBarChart').getContext('2d');
+            new Chart(revenueCtx4, {
+                type: 'bar',
+                data: {
+                    labels: ['Clothing', 'Accessories', 'Footwear', 'Outerwear'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [104264, 42300, 28500, 18500],
+                        backgroundColor: ['#0052CC', '#4A90E2', '#82B1FF', '#BBDEFB'],
+                        borderRadius: 4,
+                        barThickness: 30
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: function (context) { return '$' + context.raw.toLocaleString(); } } }
+                    }
+                }
+            });
+
+            const salesCtx4 = document.getElementById('salesBarChart').getContext('2d');
+            new Chart(salesCtx4, {
+                type: 'bar',
+                data: {
+                    labels: ['Clothing', 'Accessories', 'Footwear', 'Outerwear'],
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: [1789, 1050, 680, 381],
+                        backgroundColor: ['#003366', '#0052CC', '#4A90E2', '#82B1FF'],
+                        borderRadius: 4,
+                        barThickness: 30
+                    }]
+                },
+                options: commonOptions
+            });
+
+            const ratingCtx4 = document.getElementById('ratingBarChart').getContext('2d');
+            new Chart(ratingCtx4, {
+                type: 'line',
+                data: {
+                    labels: ['Clothing', 'Accessories', 'Footwear', 'Outerwear'],
+                    datasets: [{
+                        label: 'Avg Rating',
+                        data: [3.8, 3.7, 3.9, 3.6],
+                        borderColor: '#0052CC',
+                        backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#003366',
+                        pointRadius: 6,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        y: { min: 3.0, max: 5.0, grid: { color: '#E6F2FF' }, ticks: { stepSize: 0.5, color: '#003366' } },
+                        x: { grid: { display: false }, ticks: { color: '#003366' } }
+                    }
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
